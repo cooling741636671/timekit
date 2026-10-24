@@ -52,37 +52,49 @@
     return { extra: extra, custom: Array.isArray(custom) ? custom : [] };
   }
 
+  function citiesNow() {
+    return PRESET.map((r) => ({ city: r[0], tz: r[1], preset: true })).concat(zones().custom);
+  }
+
+  function shell(cities) {
+    const sig = cities.map((c) => c.city + '|' + c.tz).join('\n');
+    if (root.dataset.sig === sig) return;
+    root.dataset.sig = sig;
+    root.querySelector('[data-clocks]').innerHTML = cities.map((c, i) =>
+      '<article class="card" data-i="' + i + '">' +
+        '<div class="row" style="justify-content:space-between"><h3>' + TK.escapeHtml(c.city) + '</h3>' +
+        '<span data-phase></span></div>' +
+        '<div class="mono" data-time style="font-size:2rem;color:var(--primary)"></div>' +
+        '<p class="hint" data-meta></p>' +
+        (c.preset ? '' : '<button type="button" class="btn" data-remove="' + TK.escapeHtml(c.tz + '|' + c.city) + '">移除</button>') +
+      '</article>'
+    ).join('');
+    root.querySelector('[data-tl]').innerHTML = cities.map((c, i) =>
+      '<div class="tl-row" data-i="' + i + '"><span>' + TK.escapeHtml(c.city) + '</span><div class="tl-bar"><i class="tl-pin"></i></div></div>'
+    ).join('');
+  }
+
   function render() {
     if (!root) return;
     const now = new Date();
-    const { extra, custom } = zones();
-    const cities = PRESET.map((r) => ({ city: r[0], tz: r[1], preset: true })).concat(custom);
+    const cities = citiesNow();
     const bj = offsetMin('Asia/Shanghai', now);
-    const list = root.querySelector('[data-clocks]');
-    const timeline = root.querySelector('[data-tl]');
-    list.innerHTML = cities.map((c) => {
+    shell(cities);
+    cities.forEach((c, i) => {
       const p = parts(now, c.tz);
-      const hour = Number(p.hour);
-      const day = hour >= 6 && hour < 18;
-      const delta = offsetMin(c.tz, now) - bj;
-      return '<article class="card" data-tz="' + TK.escapeHtml(c.tz) + '">' +
-        '<div class="row" style="justify-content:space-between"><h3>' + TK.escapeHtml(c.city) + '</h3>' +
-        TK.icon(day ? 'sun' : 'moon', day ? '白天' : '黑夜') + '</div>' +
-        '<div class="mono" style="font-size:2rem;color:var(--primary)" aria-live="polite">' + p.hour + ':' + p.minute + ':' + p.second + '</div>' +
-        '<p class="hint">' + p.year + '-' + p.month + '-' + p.day + ' · ' + diffLabel(delta) + '</p>' +
-        (c.preset ? '' : '<button type="button" class="btn" data-remove="' + TK.escapeHtml(c.tz + '|' + c.city) + '">移除</button>') +
-      '</article>';
-    }).join('');
-    timeline.innerHTML = cities.map((c) => {
-      const p = parts(now, c.tz);
+      const card = root.querySelector('[data-clocks] [data-i="' + i + '"]');
+      card.querySelector('[data-time]').textContent = p.hour + ':' + p.minute + ':' + p.second;
+      card.querySelector('[data-meta]').textContent = p.year + '-' + p.month + '-' + p.day + ' · ' + diffLabel(offsetMin(c.tz, now) - bj);
+      const day = Number(p.hour) >= 6 && Number(p.hour) < 18;
+      const phase = day ? 'day' : 'night';
+      const mark = card.querySelector('[data-phase]');
+      if (mark.dataset.phase !== phase) {
+        mark.dataset.phase = phase;
+        mark.innerHTML = TK.icon(day ? 'sun' : 'moon', day ? '白天' : '黑夜');
+      }
       const pos = ((Number(p.hour) + Number(p.minute) / 60) / 24) * 100;
-      return '<div class="tl-row"><span>' + TK.escapeHtml(c.city) + '</span><div class="tl-bar"><i class="tl-pin" style="left:' + pos + '%"></i></div></div>';
-    }).join('');
-    const sel = root.querySelector('[data-city]');
-    if (sel && !sel.dataset.ready) {
-      sel.dataset.ready = '1';
-      sel.innerHTML = extra.map((r) => '<option value="' + TK.escapeHtml(r[1]) + '">' + TK.escapeHtml(r[0]) + ' · ' + TK.escapeHtml(r[1]) + '</option>').join('');
-    }
+      root.querySelector('[data-tl] [data-i="' + i + '"] .tl-pin').style.left = pos.toFixed(2) + '%';
+    });
   }
 
   TK.modules = TK.modules || {};
@@ -94,6 +106,8 @@
         '<form class="row" data-add><select data-city aria-label="添加城市"></select><button class="btn primary" type="submit">添加</button></form></div>' +
         '<div class="card timeline" data-tl></div>' +
         '<div class="grid" data-clocks style="margin-top:16px"></div>';
+      const sel = el.querySelector('[data-city]');
+      sel.innerHTML = zones().extra.map((r) => '<option value="' + TK.escapeHtml(r[1]) + '">' + TK.escapeHtml(r[0]) + ' · ' + TK.escapeHtml(r[1]) + '</option>').join('');
       el.querySelector('[data-add]').addEventListener('submit', (e) => {
         e.preventDefault();
         const tz = el.querySelector('[data-city]').value;
