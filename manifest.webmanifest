@@ -1,0 +1,13 @@
+{
+  "name": "TimeKit 时光工具箱",
+  "short_name": "TimeKit",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070b16",
+  "theme_color": "#070b16",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

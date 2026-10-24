@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="neon">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TimeKit · 时光工具箱</title>
+  <meta name="description" content="TimeKit 时光工具箱：倒计时、实时时钟与一组离线小工具。">
+  <meta name="theme-color" content="#070b16">
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+  <script>
+    (function () {
+      try {
+        var t = JSON.parse(localStorage.getItem('tk_theme') || 'null') || {};
+        var mode = t.mode || 'neon';
+        if (t.followSystem && window.matchMedia) {
+          mode = matchMedia('(prefers-color-scheme: light)').matches ? 'minimal' : 'neon';
+        }
+        var hour = new Date().getHours();
+        if (t.autoDark !== false && (hour >= 22 || hour < 7) && mode === 'minimal') mode = 'midnight';
+        document.documentElement.setAttribute('data-theme', mode);
+        document.documentElement.style.setProperty('--primary', t.primary || '#38f9d7');
+      } catch (err) {
+        document.documentElement.setAttribute('data-theme', 'neon');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/clock.css">
+  <link rel="stylesheet" href="css/themes.css">
+</head>
+<body>
+  <a class="sr" href="#view">跳到主内容</a>
+  <canvas id="particles" aria-hidden="true"></canvas>
+  <div class="aurora" aria-hidden="true"><span class="blob blob-a"></span><span class="blob blob-b"></span></div>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="#/"><strong>TimeKit</strong><span>时光工具箱</span></a>
+    <button type="button" class="search-btn" data-search aria-label="搜索工具">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#search"></use></svg>
+      <span>搜索工具或命令</span><kbd>Ctrl K</kbd>
+    </button>
+    <time class="top-clock" data-top-clock aria-live="polite">--:--:--</time>
+    <button type="button" class="icon-btn" data-settings aria-label="主题与设置">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#settings"></use></svg>
+    </button>
+  </header>
+  <div class="shell">
+    <nav class="sidebar" aria-label="工具"></nav>
+    <main id="view" class="view"></main>
+  </div>
+  <nav class="tabbar" aria-label="工具"></nav>
+  <div id="settings" class="card settings" hidden>
+    <strong>外观</strong>
+    <label class="field">主题
+      <select data-mode>
+        <option value="neon">霓虹</option>
+        <option value="minimal">极简</option>
+        <option value="midnight">暗夜</option>
+      </select>
+    </label>
+    <label class="switch"><input type="checkbox" data-system> 跟随系统</label>
+    <label class="switch"><input type="checkbox" data-auto checked> 22:00–7:00 自动深色</label>
+    <div class="row">主色
+      <button type="button" data-swatch="#38f9d7" style="background:#38f9d7" aria-label="青色"></button>
+      <button type="button" data-swatch="#8b5cf6" style="background:#8b5cf6" aria-label="紫色"></button>
+      <button type="button" data-swatch="#ff4fd8" style="background:#ff4fd8" aria-label="粉色"></button>
+      <button type="button" data-swatch="#ffb020" style="background:#ffb020" aria-label="琥珀色"></button>
+      <input data-color type="color" value="#38f9d7" aria-label="自定义主色">
+    </div>
+    <p class="hint" data-quota>正在估算存储…</p>
+  </div>
+  <div id="palette" class="palette" hidden>
+    <div class="palette-card" role="dialog" aria-modal="true" aria-label="命令面板">
+      <input type="text" placeholder="搜索工具，支持拼音首字母" aria-label="搜索">
+      <div class="palette-list"></div>
+    </div>
+  </div>
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+  <div id="modal-root" class="modal-root"></div>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></symbol>
+  <symbol id="world" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 2.4 2.5 13.6 0 16M12 4c-2.5 2.4-2.5 13.6 0 16"/></symbol>
+  <symbol id="timer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><path d="M12 11v3l2 1M9 4h6M12 4v2"/></symbol>
+  <symbol id="stopwatch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 13V9M10 3h4M12 3v2"/></symbol>
+  <symbol id="pomodoro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10c0-3 1.8-5 4-5s4 2 4 5v1a5 5 0 0 1-8 0v-1z"/><path d="M12 5V3M9 3h6M8 14h8"/></symbol>
+  <symbol id="calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></symbol>
+  <symbol id="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3a8 8 0 1 0 6 13 7 7 0 0 1-6-13z"/></symbol>
+  <symbol id="gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="9" rx="1"/><path d="M4 10h16M12 10v9M12 10c-2-3-5-3-5 0M12 10c2-3 5-3 5 0"/></symbol>
+  <symbol id="exchange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></symbol>
+  <symbol id="palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a8 8 0 1 0 0 16h1.2a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4 8 8 0 0 0 0-8z"/><circle cx="8" cy="10" r="0.8"/><circle cx="10" cy="7.5" r="0.8"/><circle cx="14" cy="7.5" r="0.8"/></symbol>
+  <symbol id="key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14" r="3.2"/><path d="M11 14h9l-2 2M17 14v2"/></symbol>
+  <symbol id="text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14M12 6v12M8 18h8"/></symbol>
+  <symbol id="qrcode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5zM14 14h2v2h-2zM18 14h1v5h-5v-2h2"/></symbol>
+  <symbol id="code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8 5 12l4 4M15 8l4 4-4 4"/></symbol>
+  <symbol id="regex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16c2-6 4-6 4 0s2 6 4 0 2-6 4 0"/><path d="M6 6h4M16 6h3"/></symbol>
+  <symbol id="hash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 7 20M17 4l-2 16M5 9h14M4 15h14"/></symbol>
+  <symbol id="markdown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 15V9l3 3 3-3v6M17 12l-2 2 2 2"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></symbol>
+  <symbol id="star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 4 2.2 4.6 5 .7-3.6 3.5.9 5L12 15.8 7.5 17.8l.9-5L4.8 9.3l5-.7z"/></symbol>
+  <symbol id="star-fill" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="m12 4 2.2 4.6 5 .7-3.6 3.5.9 5L12 15.8 7.5 17.8l.9-5L4.8 9.3l5-.7z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></symbol>
+  <symbol id="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M18.4 5.6 16.9 7.1M7.1 16.9 5.6 18.4"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></symbol>
+  <symbol id="copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M5 15V5h10"/></symbol>
+</svg>
+
+  <script src="js/lib/qrcode.js"></script>
+  <script src="data/lunar.js"></script>
+  <script src="data/holidays.js"></script>
+  <script src="js/dom.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/modules/clock.js"></script>
+  <script src="js/modules/countdown.js"></script>
+  <script src="js/modules/worldclock.js"></script>
+  <script src="js/modules/stopwatch.js"></script>
+  <script src="js/modules/pomodoro.js"></script>
+  <script src="js/modules/datecalc.js"></script>
+  <script src="js/modules/lunar.js"></script>
+  <script src="js/modules/holiday.js"></script>
+  <script src="js/modules/unit.js"></script>
+  <script src="js/modules/color.js"></script>
+  <script src="js/modules/password.js"></script>
+  <script src="js/modules/text.js"></script>
+  <script src="js/modules/qrcode.js"></script>
+  <script src="js/modules/json.js"></script>
+  <script src="js/modules/regex.js"></script>
+  <script src="js/modules/hash.js"></script>
+  <script src="js/modules/markdown.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

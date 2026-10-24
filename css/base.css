@@ -1,0 +1,98 @@
+@layer reset, base, motion;
+
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  img, svg { display: block; }
+  h1, h2, h3, p { margin: 0; }
+  ul { margin: 0; padding: 0; list-style: none; }
+  a { color: inherit; }
+}
+
+@layer base {
+  html { color-scheme: dark; }
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: var(--bg-0);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--fz-body);
+    line-height: 1.5;
+  }
+  ::selection { background: color-mix(in srgb, var(--primary) 35%, transparent); }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+  .mono, .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  #particles, .aurora, .grid-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .aurora { overflow: hidden; }
+  .blob {
+    position: absolute;
+    width: 40vw;
+    height: 40vw;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.35;
+  }
+  .blob-a { background: var(--cyan); top: -12vw; left: -8vw; animation: drift-a 20s ease-in-out infinite alternate; }
+  .blob-b { background: var(--violet); right: -10vw; bottom: -14vw; animation: drift-b 26s ease-in-out infinite alternate; }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(130, 160, 220, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(130, 160, 220, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 78%);
+  }
+  .ico { width: 22px; height: 22px; stroke: currentColor; fill: none; }
+  .ico use { stroke: currentColor; }
+}
+
+@layer motion {
+  @keyframes drift-a {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(8vw, 5vw, 0); }
+  }
+  @keyframes drift-b {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-6vw, -4vw, 0); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    #particles, .aurora { display: none !important; }
+  }
+}

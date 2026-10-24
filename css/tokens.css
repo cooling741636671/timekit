@@ -1,0 +1,57 @@
+:root {
+  --bg-0: #070b16;
+  --bg-1: #0d1428;
+  --bg-2: #141d36;
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --bg-glass-strong: rgba(255, 255, 255, 0.08);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.18);
+
+  --cyan: #38f9d7;
+  --glow-cyan: 0 0 12px rgba(56, 249, 215, 0.75), 0 0 40px rgba(56, 249, 215, 0.35);
+  --violet: #8b5cf6;
+  --glow-violet: 0 0 12px rgba(139, 92, 246, 0.75), 0 0 40px rgba(139, 92, 246, 0.35);
+  --pink: #ff4fd8;
+  --glow-pink: 0 0 12px rgba(255, 79, 216, 0.75), 0 0 40px rgba(255, 79, 216, 0.35);
+  --amber: #ffb020;
+  --glow-amber: 0 0 12px rgba(255, 176, 32, 0.75);
+  --red: #ff5a5f;
+  --glow-red: 0 0 12px rgba(255, 90, 95, 0.8);
+  --text: #eaf0ff;
+  --text-dim: #8492b0;
+  /* 原规格 #4e5b78 在深色底上低于 WCAG AA，提亮到仍偏冷的灰蓝 */
+  --text-mute: #93a0bf;
+
+  --primary: #38f9d7;
+  --glow-primary: 0 0 12px color-mix(in srgb, var(--primary) 75%, transparent), 0 0 40px color-mix(in srgb, var(--primary) 35%, transparent);
+  --on-primary: #061018;
+
+  --fz-hero: clamp(3.5rem, 12vw, 9rem);
+  --fz-countdown: clamp(2.4rem, 7vw, 5.2rem);
+  --fz-title: 1.5rem;
+  --fz-body: 0.95rem;
+  --fz-small: 0.8rem;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-12: 48px;
+
+  --r-s: 8px;
+  --r-m: 14px;
+  --r-l: 22px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  --sidebar: 260px;
+  --topbar: 48px;
+  --z-toast: 100;
+  --z-modal: 200;
+  --z-palette: 300;
+}
